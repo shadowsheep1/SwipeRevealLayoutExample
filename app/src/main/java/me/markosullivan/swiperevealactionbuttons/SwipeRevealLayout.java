@@ -19,6 +19,8 @@ import androidx.core.view.GestureDetectorCompat;
 import androidx.core.view.ViewCompat;
 import androidx.customview.widget.ViewDragHelper;
 
+import timber.log.Timber;
+
 /**
  * Created by Mark O'Sullivan on 25th February 2018.
  */
@@ -485,7 +487,7 @@ public class SwipeRevealLayout extends ViewGroup {
 
     private boolean shouldInitiateADrag() {
         float minDistToInitiateDrag = mDragHelper.getTouchSlop();
-        return mDragDist >= minDistToInitiateDrag;
+        return getDraggedDistance() >= minDistToInitiateDrag;
     }
 
     private void accumulateDragDist(MotionEvent ev) {
@@ -495,9 +497,18 @@ public class SwipeRevealLayout extends ViewGroup {
             return;
         }
 
-        float dragged = Math.abs(ev.getX() - mPrevX);
+        float signedDraggedDistance = ev.getX() - mPrevX;
+        mDragDist += signedDraggedDistance;
+        Timber.i("Drag distance " + signedDraggedDistance);
+        Timber.i("Total drag distance " + mDragDist);
+    }
 
-        mDragDist += dragged;
+    private float getDraggedDistance() {
+        return Math.abs(mDragDist);
+    }
+
+    private boolean draggingFromLeftToRight() {
+        return mDragDist > 0;
     }
 
     private void init(Context context, AttributeSet attrs) {
