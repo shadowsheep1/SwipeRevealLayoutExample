@@ -34,16 +34,28 @@ public class MainListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
         MainListItem mainListItem = (MainListItem) holder;
         mainListItem.mealTV.setText(shoppingList.get(position));
-        mainListItem.infoButton.setOnClickListener(new View.OnClickListener() {
+        mainListItem.infoRightButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(v.getContext(), "INFO CLICKED @" + position, Toast.LENGTH_SHORT).show();
+                Toast.makeText(v.getContext(), "INFO RIGHT CLICKED @" + position, Toast.LENGTH_SHORT).show();
             }
         });
-        mainListItem.editButton.setOnClickListener(new View.OnClickListener() {
+        mainListItem.editRightButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(v.getContext(), "EDIT CLICKED @" + position, Toast.LENGTH_SHORT).show();
+                Toast.makeText(v.getContext(), "EDIT RIGHT CLICKED @" + position, Toast.LENGTH_SHORT).show();
+            }
+        });
+        mainListItem.infoLeftButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(v.getContext(), "INFO left CLICKED @" + position, Toast.LENGTH_SHORT).show();
+            }
+        });
+        mainListItem.editLeftButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(v.getContext(), "EDIT left CLICKED @" + position, Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -56,14 +68,18 @@ public class MainListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     public static class MainListItem extends RecyclerView.ViewHolder {
 
         protected TextView mealTV;
-        protected ImageView infoButton;
-        protected ImageView editButton;
+        protected ImageView infoRightButton;
+        protected ImageView editRightButton;
+        protected ImageView infoLeftButton;
+        protected ImageView editLeftButton;
 
         protected MainListItem(View itemView) {
             super(itemView);
             mealTV = itemView.findViewById(R.id.meal_tv);
-            infoButton = itemView.findViewById(R.id.info_button);
-            editButton= itemView.findViewById(R.id.edit_button);
+            infoRightButton = itemView.findViewById(R.id.info_button);
+            editRightButton= itemView.findViewById(R.id.edit_button);
+            infoLeftButton = itemView.findViewById(R.id.left_info_button);
+            editLeftButton= itemView.findViewById(R.id.left_edit_button);
         }
     }
 }
