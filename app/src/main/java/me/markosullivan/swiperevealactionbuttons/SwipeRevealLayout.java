@@ -339,6 +339,7 @@ public class SwipeRevealLayout extends ViewGroup {
      * Open the panel to show the secondary view
      */
     public void open(boolean animation) {
+        // TODO - here we open the menu
         mIsOpenBeforeInit = true;
 
         if (animation) {
@@ -368,6 +369,7 @@ public class SwipeRevealLayout extends ViewGroup {
      * Close the panel to hide the secondary view
      */
     public void close(boolean animation) {
+        // TODO - here we hide the menu
         mIsOpenBeforeInit = false;
 
         if (animation) {
@@ -633,6 +635,7 @@ public class SwipeRevealLayout extends ViewGroup {
             final boolean velRightExceeded = pxToDp((int) xvel) >= mMinFlingVelocity;
             final boolean velLeftExceeded = pxToDp((int) xvel) <= -mMinFlingVelocity;
 
+            // TODO - here we release the view
             final int pivotHorizontal = getHalfwayPivotHorizontal();
 
             switch (mDragEdge) {
