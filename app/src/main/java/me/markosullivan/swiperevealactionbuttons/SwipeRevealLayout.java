@@ -41,11 +41,6 @@ public class SwipeRevealLayout extends ViewGroup {
     public static final int MODE_NORMAL = 0;
 
     /**
-     * The secondary view will stick the edge of the main view.
-     */
-    public static final int MODE_SAME_LEVEL = 1;
-
-    /**
      * Main view is the view which is shown when the layout is closed.
      */
     private View mMainView;
@@ -223,19 +218,6 @@ public class SwipeRevealLayout extends ViewGroup {
             }
 
             child.layout(left, top, right, bottom);
-        }
-
-        // taking account offset when mode is SAME_LEVEL
-        if (mMode == MODE_SAME_LEVEL) {
-            switch (mDragEdge) {
-                case DRAG_EDGE_LEFT:
-                    mSecondaryView.offsetLeftAndRight(-mSecondaryView.getWidth());
-                    break;
-
-                case DRAG_EDGE_RIGHT:
-                    mSecondaryView.offsetLeftAndRight(mSecondaryView.getWidth());
-                    break;
-            }
         }
 
         initRects();
@@ -516,7 +498,8 @@ public class SwipeRevealLayout extends ViewGroup {
             TypedArray a = context.getTheme().obtainStyledAttributes(
                     attrs,
                     R.styleable.SwipeRevealLayout,
-                    0, 0
+                    0,
+                    0
             );
 
             mDragEdge = a.getInteger(R.styleable.SwipeRevealLayout_dragFromEdge, DRAG_EDGE_LEFT);
@@ -694,13 +677,6 @@ public class SwipeRevealLayout extends ViewGroup {
         @Override
         public void onViewPositionChanged(@NonNull View changedView, int left, int top, int dx, int dy) {
             super.onViewPositionChanged(changedView, left, top, dx, dy);
-            if (mMode == MODE_SAME_LEVEL) {
-                if (mDragEdge == DRAG_EDGE_LEFT || mDragEdge == DRAG_EDGE_RIGHT) {
-                    mSecondaryView.offsetLeftAndRight(dx);
-                } else {
-                    mSecondaryView.offsetTopAndBottom(dy);
-                }
-            }
             ViewCompat.postInvalidateOnAnimation(SwipeRevealLayout.this);
         }
     };
