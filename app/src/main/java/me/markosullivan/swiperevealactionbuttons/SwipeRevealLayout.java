@@ -141,8 +141,8 @@ public class SwipeRevealLayout extends ViewGroup {
 
         boolean couldBecomeClick = couldBecomeClick(ev);
         boolean settling = mDragHelper.getViewDragState() == ViewDragHelper.STATE_SETTLING;
-        boolean idleAfterScrolled = mDragHelper.getViewDragState() == ViewDragHelper.STATE_IDLE
-                && mIsScrolling;
+        boolean idleAfterScrolled
+                = mDragHelper.getViewDragState() == ViewDragHelper.STATE_IDLE && mIsScrolling;
 
         // must be placed as the last statement
         mPrevX = ev.getX();
