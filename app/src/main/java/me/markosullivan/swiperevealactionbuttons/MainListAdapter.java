@@ -1,12 +1,13 @@
 package me.markosullivan.swiperevealactionbuttons;
 
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
@@ -55,8 +56,8 @@ public class MainListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     public static class MainListItem extends RecyclerView.ViewHolder {
 
         protected TextView mealTV;
-        protected ImageButton infoButton;
-        protected ImageButton editButton;
+        protected ImageView infoButton;
+        protected ImageView editButton;
 
         protected MainListItem(View itemView) {
             super(itemView);
