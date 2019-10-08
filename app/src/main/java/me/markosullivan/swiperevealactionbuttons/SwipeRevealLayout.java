@@ -169,7 +169,6 @@ public class SwipeRevealLayout extends ViewGroup {
     /**
      * {@inheritDoc}
      */
-    @SuppressWarnings("ConstantConditions")
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         for (int index = 0; index < getChildCount(); index++) {
