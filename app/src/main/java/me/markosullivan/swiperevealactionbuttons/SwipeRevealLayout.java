@@ -13,6 +13,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.view.GestureDetectorCompat;
 import androidx.core.view.ViewCompat;
@@ -400,13 +401,6 @@ public class SwipeRevealLayout extends ViewGroup {
         return mLockDrag;
     }
 
-    /**
-     * @return Set true for lock the swipe.
-     */
-    public void dragLock(Boolean drag) {
-        this.mLockDrag = drag;
-    }
-
     private int getMainOpenLeft() {
         switch (mDragEdge) {
             case DRAG_EDGE_LEFT:
@@ -424,8 +418,6 @@ public class SwipeRevealLayout extends ViewGroup {
     private int getMainOpenTop() {
         switch (mDragEdge) {
             case DRAG_EDGE_LEFT:
-                return mRectMainClose.top;
-
             case DRAG_EDGE_RIGHT:
                 return mRectMainClose.top;
 
@@ -601,7 +593,7 @@ public class SwipeRevealLayout extends ViewGroup {
 
     private final ViewDragHelper.Callback mDragHelperCallback = new ViewDragHelper.Callback() {
         @Override
-        public boolean tryCaptureView(View child, int pointerId) {
+        public boolean tryCaptureView(@NonNull View child, int pointerId) {
 
             if (mLockDrag)
                 return false;
@@ -611,7 +603,7 @@ public class SwipeRevealLayout extends ViewGroup {
         }
 
         @Override
-        public int clampViewPositionHorizontal(View child, int left, int dx) {
+        public int clampViewPositionHorizontal(@NonNull View child, int left, int dx) {
             switch (mDragEdge) {
                 case DRAG_EDGE_RIGHT:
                     return Math.max(
@@ -631,7 +623,7 @@ public class SwipeRevealLayout extends ViewGroup {
         }
 
         @Override
-        public void onViewReleased(View releasedChild, float xvel, float yvel) {
+        public void onViewReleased(@NonNull View releasedChild, float xvel, float yvel) {
             final boolean velRightExceeded = pxToDp((int) xvel) >= mMinFlingVelocity;
             final boolean velLeftExceeded = pxToDp((int) xvel) <= -mMinFlingVelocity;
 
@@ -689,7 +681,7 @@ public class SwipeRevealLayout extends ViewGroup {
         }
 
         @Override
-        public void onViewPositionChanged(View changedView, int left, int top, int dx, int dy) {
+        public void onViewPositionChanged(@NonNull View changedView, int left, int top, int dx, int dy) {
             super.onViewPositionChanged(changedView, left, top, dx, dy);
             if (mMode == MODE_SAME_LEVEL) {
                 if (mDragEdge == DRAG_EDGE_LEFT || mDragEdge == DRAG_EDGE_RIGHT) {
