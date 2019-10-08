@@ -30,19 +30,19 @@ public class MainListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     }
 
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+    public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
         MainListItem mainListItem = (MainListItem) holder;
         mainListItem.mealTV.setText(shoppingList.get(position));
         mainListItem.infoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(v.getContext(), "INFO CLICKED", Toast.LENGTH_SHORT).show();
+                Toast.makeText(v.getContext(), "INFO CLICKED @" + position, Toast.LENGTH_SHORT).show();
             }
         });
         mainListItem.editButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(v.getContext(), "EDIT CLICKED", Toast.LENGTH_SHORT).show();
+                Toast.makeText(v.getContext(), "EDIT CLICKED @" + position, Toast.LENGTH_SHORT).show();
             }
         });
     }
