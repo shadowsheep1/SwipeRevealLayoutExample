@@ -40,6 +40,34 @@ public class MainActivity extends AppCompatActivity {
         mealList.add("Vegetable stir-fry");
         mealList.add("Sweet potato and orange soup");
         mealList.add("Vegetable Broth");
+        mealList.add("Green Thai Curry");
+        mealList.add("Granola");
+        mealList.add("Poached Eggs");
+        mealList.add("Spaghetti");
+        mealList.add("Apple Pie");
+        mealList.add("Grilled Cheese Sandwich");
+        mealList.add("Vegetable Soup");
+        mealList.add("Chicken Noodles");
+        mealList.add("Fajitas");
+        mealList.add("Chicken Pot Pie");
+        mealList.add("Pasta and cauliflower casserole with chicken");
+        mealList.add("Vegetable stir-fry");
+        mealList.add("Sweet potato and orange soup");
+        mealList.add("Vegetable Broth");
+        mealList.add("Green Thai Curry");
+        mealList.add("Granola");
+        mealList.add("Poached Eggs");
+        mealList.add("Spaghetti");
+        mealList.add("Apple Pie");
+        mealList.add("Grilled Cheese Sandwich");
+        mealList.add("Vegetable Soup");
+        mealList.add("Chicken Noodles");
+        mealList.add("Fajitas");
+        mealList.add("Chicken Pot Pie");
+        mealList.add("Pasta and cauliflower casserole with chicken");
+        mealList.add("Vegetable stir-fry");
+        mealList.add("Sweet potato and orange soup");
+        mealList.add("Vegetable Broth");
         return mealList;
     }
 }
