@@ -97,26 +97,34 @@ class SwipeRevealLayout : ViewGroup {
     private lateinit var dragHelper: ViewDragHelper
     private lateinit var gestureDetector: GestureDetectorCompat
 
+    //region mainOpenLeft
     private val mainOpenLeft: Int
         get() {
             return when (dragEdge) {
-                DRAG_EDGE_LEFT or DRAG_EDGE_RIGHT -> if (draggingFromRightToLeft()) {
-                    rectMainClose.left - leftView.width
-                } else {
-                    rectMainClose.left + rightView.width
-                }
-                DRAG_EDGE_LEFT -> rectMainClose.left + rightView.width
+                DRAG_EDGE_LEFT or DRAG_EDGE_RIGHT ->
+                    if (draggingFromRightToLeft()) {
+                        mainOpenLeftForRightEdge()
+                    } else {
+                        mainOpenLeftForLeftEdge(leftView.width)
+                    }
+                DRAG_EDGE_LEFT -> mainOpenLeftForLeftEdge(rightView.width)
 
-                DRAG_EDGE_RIGHT -> rectMainClose.left - rightView.width
+                DRAG_EDGE_RIGHT -> mainOpenLeftForRightEdge()
 
                 else -> 0
             }
         }
 
+    private fun mainOpenLeftForRightEdge() = rectMainClose.left - rightView.width
+    private fun mainOpenLeftForLeftEdge(leftWidth: Int) = rectMainClose.left + leftWidth
+    //endregion
+
     private val mainOpenTop: Int
         get() {
             return when (dragEdge) {
-                DRAG_EDGE_LEFT, DRAG_EDGE_RIGHT -> rectMainClose.top
+                DRAG_EDGE_LEFT,
+                DRAG_EDGE_RIGHT,
+                DRAG_EDGE_LEFT or DRAG_EDGE_RIGHT -> rectMainClose.top
 
                 else -> 0
             }
@@ -144,12 +152,18 @@ class SwipeRevealLayout : ViewGroup {
             return true
         }
 
-        override fun onFling(e1: MotionEvent, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
+        override fun onFling(e1: MotionEvent,
+                             e2: MotionEvent,
+                             velocityX: Float,
+                             velocityY: Float): Boolean {
             isScrolling = true
             return false
         }
 
-        override fun onScroll(e1: MotionEvent, e2: MotionEvent, distanceX: Float, distanceY: Float): Boolean {
+        override fun onScroll(e1: MotionEvent,
+                              e2: MotionEvent,
+                              distanceX: Float,
+                              distanceY: Float): Boolean {
             isScrolling = true
 
             if (parent != null) {
@@ -174,57 +188,63 @@ class SwipeRevealLayout : ViewGroup {
     }
     //endregion
 
+    //region distToClosestEdge
     private val distToClosestEdge: Int
         get() {
             when (dragEdge) {
                 DRAG_EDGE_LEFT or DRAG_EDGE_RIGHT ->
                     return if (draggingFromRightToLeft()) {
-                        val pivotLeft = rectMainClose.right - rightView.width
-                        min(
-                                mainView.right - pivotLeft,
-                                rectMainClose.right - mainView.right
-                        )
+                        distToClosestEdgeForRightEdge()
                     } else {
-                        val pivotRight = rectMainClose.left + leftView.width
-                        min(
-                                mainView.left - rectMainClose.left,
-                                pivotRight - mainView.left
-                        )
+                        distToClosestEdgeForLeftEdge(leftView.width)
                     }
 
                 DRAG_EDGE_LEFT -> {
-                    val pivotRight = rectMainClose.left + rightView.width
-                    return min(
-                            mainView.left - rectMainClose.left,
-                            pivotRight - mainView.left
-                    )
+                    distToClosestEdgeForLeftEdge(rightView.width)
                 }
 
                 DRAG_EDGE_RIGHT -> {
-                    val pivotLeft = rectMainClose.right - rightView.width
-                    return min(
-                            mainView.right - pivotLeft,
-                            rectMainClose.right - mainView.right
-                    )
+                    return distToClosestEdgeForRightEdge()
                 }
             }
 
             return 0
         }
 
-    private//if (dragEdge == (DRAG_EDGE_RIGHT | DRAG_EDGE_LEFT)) {
-    val halfwayPivotHorizontal: Int
+    private fun distToClosestEdgeForRightEdge(): Int {
+        val pivotLeft = rectMainClose.right - rightView.width
+        return min(
+                mainView.right - pivotLeft,
+                rectMainClose.right - mainView.right
+        )
+    }
+
+    private fun distToClosestEdgeForLeftEdge(leftWidth: Int): Int {
+        val pivotRight = rectMainClose.left + leftWidth
+        return min(
+                mainView.left - rectMainClose.left,
+                pivotRight - mainView.left
+        )
+    }
+    //endregion
+
+    //region halfwayPivotHorizontal
+    private val halfwayPivotHorizontal: Int
         get() = if (dragEdge == DRAG_EDGE_LEFT) {
-            rectMainClose.left + rightView.width / 2
+            halfwayPivotHorizontalForLeftEdge(rightView.width)
         } else if (dragEdge == DRAG_EDGE_RIGHT) {
-            rectMainClose.right - rightView.width / 2
+            halfwayPivotHorizontalForRightEdge()
         } else {
             if (draggingFromRightToLeft()) {
-                rectMainClose.right - rightView.width / 2
+                halfwayPivotHorizontalForRightEdge()
             } else {
-                rectMainClose.left + leftView.width / 2
+                halfwayPivotHorizontalForLeftEdge(leftView.width)
             }
         }
+
+    private fun halfwayPivotHorizontalForRightEdge() = rectMainClose.right - rightView.width / 2
+    private fun halfwayPivotHorizontalForLeftEdge(leftWidth: Int) = rectMainClose.right + leftWidth / 2
+    //endregion
 
     //region Drag Helper
     private val dragHelperCallback = object : ViewDragHelper.Callback() {
@@ -239,27 +259,19 @@ class SwipeRevealLayout : ViewGroup {
 
         override fun clampViewPositionHorizontal(child: View, left: Int, dx: Int): Int {
             when (dragEdge) {
-                DRAG_EDGE_RIGHT -> return max(
-                        min(left, rectMainClose.left),
-                        rectMainClose.left - rightView.width
+                DRAG_EDGE_RIGHT -> return clampViewPositionHorizontalForRightEdge(left)
+
+                DRAG_EDGE_LEFT -> return clampViewPositionHorizontalForLeftEdge(
+                        left,
+                        rightView.width
                 )
 
-                DRAG_EDGE_LEFT -> return max(
-                        min(left, rectMainClose.left + rightView.width),
-                        rectMainClose.left
-                )
-
-                DRAG_EDGE_LEFT or DRAG_EDGE_RIGHT -> return if (draggingFromRightToLeft()) {
-                    max(
-                            min(left, rectMainClose.left),
-                            rectMainClose.left - rightView.width
-                    )
-                } else {
-                    max(
-                            min(left, rectMainClose.left + leftView.width),
-                            rectMainClose.left
-                    )
-                }
+                DRAG_EDGE_LEFT or DRAG_EDGE_RIGHT ->
+                    return if (draggingFromRightToLeft()) {
+                        clampViewPositionHorizontalForRightEdge(left)
+                    } else {
+                        clampViewPositionHorizontalForLeftEdge(left, leftView.width)
+                    }
 
                 else -> return child.left
             }
@@ -269,7 +281,7 @@ class SwipeRevealLayout : ViewGroup {
             val velRightExceeded = pxToDp(xvel.toInt()) >= minFlingVelocity
             val velLeftExceeded = pxToDp(xvel.toInt()) <= -minFlingVelocity
 
-            // TODO - here we release the view
+            // OKAY - here we release the view
             val pivotHorizontal = halfwayPivotHorizontal
 
             // Update rectMainOpen
@@ -282,54 +294,25 @@ class SwipeRevealLayout : ViewGroup {
             )
 
             when (dragEdge) {
-                DRAG_EDGE_LEFT or DRAG_EDGE_RIGHT -> if (draggingFromRightToLeft()) {
-                    if (velRightExceeded) {
-                        close(true)
-                    } else if (velLeftExceeded) {
-                        open(true)
+                DRAG_EDGE_LEFT or DRAG_EDGE_RIGHT ->
+                    if (draggingFromRightToLeft()) {
+                        onViewReleasedForRightEdge(
+                                velRightExceeded,
+                                velLeftExceeded,
+                                pivotHorizontal
+                        )
                     } else {
-                        if (mainView.right < pivotHorizontal) {
-                            open(true)
-                        } else {
-                            close(true)
-                        }
+                        onViewReleasedForLeftEdge(
+                                velRightExceeded,
+                                velLeftExceeded,
+                                pivotHorizontal
+                        )
                     }
-                } else {
-                    if (velRightExceeded) {
-                        open(true)
-                    } else if (velLeftExceeded) {
-                        close(true)
-                    } else {
-                        if (mainView.left < pivotHorizontal) {
-                            close(true)
-                        } else {
-                            open(true)
-                        }
-                    }
-                }
-                DRAG_EDGE_RIGHT -> if (velRightExceeded) {
-                    close(true)
-                } else if (velLeftExceeded) {
-                    open(true)
-                } else {
-                    if (mainView.right < pivotHorizontal) {
-                        open(true)
-                    } else {
-                        close(true)
-                    }
-                }
+                DRAG_EDGE_RIGHT ->
+                    onViewReleasedForRightEdge(velRightExceeded, velLeftExceeded, pivotHorizontal)
 
-                DRAG_EDGE_LEFT -> if (velRightExceeded) {
-                    open(true)
-                } else if (velLeftExceeded) {
-                    close(true)
-                } else {
-                    if (mainView.left < pivotHorizontal) {
-                        close(true)
-                    } else {
-                        open(true)
-                    }
-                }
+                DRAG_EDGE_LEFT ->
+                    onViewReleasedForLeftEdge(velRightExceeded, velLeftExceeded, pivotHorizontal)
             }
         }
 
@@ -349,10 +332,60 @@ class SwipeRevealLayout : ViewGroup {
             }
         }
 
-        override fun onViewPositionChanged(changedView: View, left: Int, top: Int, dx: Int, dy: Int) {
+        override fun onViewPositionChanged(changedView: View,
+                                           left: Int,
+                                           top: Int,
+                                           dx: Int,
+                                           dy: Int) {
             super.onViewPositionChanged(changedView, left, top, dx, dy)
             ViewCompat.postInvalidateOnAnimation(this@SwipeRevealLayout)
         }
+    }
+
+    private fun onViewReleasedForLeftEdge(velRightExceeded: Boolean,
+                                          velLeftExceeded: Boolean,
+                                          pivotHorizontal: Int) {
+        if (velRightExceeded) {
+            open(true)
+        } else if (velLeftExceeded) {
+            close(true)
+        } else {
+            if (mainView.left < pivotHorizontal) {
+                close(true)
+            } else {
+                open(true)
+            }
+        }
+    }
+
+    private fun onViewReleasedForRightEdge(velRightExceeded: Boolean,
+                                           velLeftExceeded: Boolean,
+                                           pivotHorizontal: Int) {
+        if (velRightExceeded) {
+            close(true)
+        } else if (velLeftExceeded) {
+            open(true)
+        } else {
+            if (mainView.right < pivotHorizontal) {
+                open(true)
+            } else {
+                close(true)
+            }
+        }
+    }
+
+    private fun clampViewPositionHorizontalForRightEdge(left: Int): Int {
+        return max(
+                min(left, rectMainClose.left),
+                rectMainClose.left - rightView.width
+        )
+    }
+
+    private fun clampViewPositionHorizontalForLeftEdge(left: Int, leftWidth: Int): Int {
+        return max(
+                min(left, rectMainClose.left + leftWidth),
+                rectMainClose.left
+        )
     }
     //endregion
 
@@ -363,8 +396,6 @@ class SwipeRevealLayout : ViewGroup {
     constructor(context: Context, attrs: AttributeSet) : super(context, attrs) {
         init(context, attrs)
     }
-
-    constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
 
     //region Save Instance State
     override fun onSaveInstanceState(): Parcelable? {
@@ -472,17 +503,18 @@ class SwipeRevealLayout : ViewGroup {
             }
 
             when (dragEdge) {
-                DRAG_EDGE_LEFT or DRAG_EDGE_RIGHT -> if (0 == index) { // right view
-                    left = max(r - measuredChildWidth - paddingRight - l, minLeft)
-                    top = min(paddingTop, maxBottom)
-                    right = max(r - paddingRight - l, minLeft)
-                    bottom = min(measuredChildHeight + paddingTop, maxBottom)
-                } else { // left view
-                    left = min(paddingLeft, maxRight)
-                    top = min(paddingTop, maxBottom)
-                    right = min(measuredChildWidth + paddingLeft, maxRight)
-                    bottom = min(measuredChildHeight + paddingTop, maxBottom)
-                }
+                DRAG_EDGE_LEFT or DRAG_EDGE_RIGHT ->
+                    if (0 == index) { // right view
+                        left = max(r - measuredChildWidth - paddingRight - l, minLeft)
+                        top = min(paddingTop, maxBottom)
+                        right = max(r - paddingRight - l, minLeft)
+                        bottom = min(measuredChildHeight + paddingTop, maxBottom)
+                    } else { // left view
+                        left = min(paddingLeft, maxRight)
+                        top = min(paddingTop, maxBottom)
+                        right = min(measuredChildWidth + paddingLeft, maxRight)
+                        bottom = min(measuredChildHeight + paddingTop, maxBottom)
+                    }
 
                 DRAG_EDGE_RIGHT -> {
                     left = max(r - measuredChildWidth - paddingRight - l, minLeft)
@@ -605,8 +637,8 @@ class SwipeRevealLayout : ViewGroup {
     /**
      * Open the panel to show the secondary view
      */
-    fun open(animation: Boolean) {
-        // TODO - here we open the menu
+    private fun open(animation: Boolean) {
+        // OKAY - here we open the menu
         isOpenBeforeInit = true
 
         if (animation) {
@@ -643,8 +675,8 @@ class SwipeRevealLayout : ViewGroup {
     /**
      * Close the panel to hide the secondary view
      */
-    fun close(animation: Boolean) {
-        // TODO - here we hide the menu
+    private fun close(animation: Boolean) {
+        // OKAY - here we hide the menu
         isOpenBeforeInit = false
 
         if (animation) {
@@ -791,7 +823,8 @@ class SwipeRevealLayout : ViewGroup {
     }
 
     companion object {
-        private val SUPER_INSTANCE_STATE = SwipeRevealLayout::class.java.name + "saved_instance_state_parcelable"
+        private val SUPER_INSTANCE_STATE =
+                SwipeRevealLayout::class.java.name + "saved_instance_state_parcelable"
 
         private const val DEFAULT_MIN_FLING_VELOCITY = 300 // dp per second
         private const val DEFAULT_MIN_DIST_REQUEST_DISALLOW_PARENT = 1 // dp
