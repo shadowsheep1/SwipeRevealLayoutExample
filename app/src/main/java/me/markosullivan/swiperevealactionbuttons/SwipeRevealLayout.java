@@ -559,8 +559,8 @@ public class SwipeRevealLayout extends ViewGroup {
 
         float signedDraggedDistance = ev.getX() - prevX;
         dragDist += signedDraggedDistance;
-        Timber.i("Drag distance " + signedDraggedDistance);
-        Timber.i("Total drag distance " + dragDist);
+        Timber.i("Drag distance %s", signedDraggedDistance);
+        Timber.i("Total drag distance %s", dragDist);
     }
 
     private float getDraggedDistance() {
