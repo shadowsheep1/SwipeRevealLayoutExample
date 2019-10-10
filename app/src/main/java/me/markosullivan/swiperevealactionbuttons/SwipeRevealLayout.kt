@@ -428,6 +428,7 @@ class SwipeRevealLayout : ViewGroup {
         return true
     }
 
+    // https://developer.android.com/training/gestures/viewgroup
     override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
         if (isDragLocked && isInMainView(ev) && isOpen) {
             close(true)
