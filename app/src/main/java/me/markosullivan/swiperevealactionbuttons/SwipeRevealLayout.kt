@@ -76,7 +76,7 @@ class SwipeRevealLayout : ViewGroup {
      */
     private var minDistRequestDisallowParent = 0
 
-    private var isOpenBeforeInit = false
+    private var isOpen = false
     @Volatile
     private var isScrolling = false
     /**
@@ -244,6 +244,15 @@ class SwipeRevealLayout : ViewGroup {
 
     private fun halfwayPivotHorizontalForRightEdge() = rectMainClose.right - rightView.width / 2
     private fun halfwayPivotHorizontalForLeftEdge(leftWidth: Int) = rectMainClose.right + leftWidth / 2
+    //endregion
+
+    //region reset layout
+    @Suppress("unused")
+    fun resetLayout() {
+        if (isOpen) {
+            close(false)
+        }
+    }
     //endregion
 
     //region Drag Helper
@@ -420,7 +429,7 @@ class SwipeRevealLayout : ViewGroup {
     }
 
     override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
-        if (isDragLocked && isInMainView(ev)) {
+        if (isDragLocked && isInMainView(ev) && isOpen) {
             close(true)
             return super.onInterceptTouchEvent(ev)
         }
@@ -536,7 +545,7 @@ class SwipeRevealLayout : ViewGroup {
 
         initRects()
 
-        if (isOpenBeforeInit) {
+        if (isOpen) {
             open(false)
         } else {
             close(false)
@@ -639,7 +648,7 @@ class SwipeRevealLayout : ViewGroup {
      */
     private fun open(animation: Boolean) {
         // OKAY - here we open the menu
-        isOpenBeforeInit = true
+        isOpen = true
 
         if (animation) {
             dragHelper.smoothSlideViewTo(mainView, rectMainOpen.left, rectMainOpen.top)
@@ -653,19 +662,23 @@ class SwipeRevealLayout : ViewGroup {
                     rectMainOpen.bottom
             )
 
-            rightView.layout(
-                    rectRightOpen.left,
-                    rectRightOpen.top,
-                    rectRightOpen.right,
-                    rectRightOpen.bottom
-            )
+            if ((dragEdge and DRAG_EDGE_RIGHT) != 0) {
+                rightView.layout(
+                        rectRightOpen.left,
+                        rectRightOpen.top,
+                        rectRightOpen.right,
+                        rectRightOpen.bottom
+                )
+            }
 
-            leftView.layout(
-                    rectLeftOpen.left,
-                    rectLeftOpen.top,
-                    rectLeftOpen.right,
-                    rectLeftOpen.bottom
-            )
+            if (dragEdge == DRAG_EDGE_LEFT and DRAG_EDGE_RIGHT) {
+                leftView.layout(
+                        rectLeftOpen.left,
+                        rectLeftOpen.top,
+                        rectLeftOpen.right,
+                        rectLeftOpen.bottom
+                )
+            }
         }
 
         ViewCompat.postInvalidateOnAnimation(this)
@@ -677,7 +690,7 @@ class SwipeRevealLayout : ViewGroup {
      */
     private fun close(animation: Boolean) {
         // OKAY - here we hide the menu
-        isOpenBeforeInit = false
+        isOpen = false
 
         if (animation) {
             dragHelper.smoothSlideViewTo(mainView, rectMainClose.left, rectMainClose.top)
@@ -691,19 +704,23 @@ class SwipeRevealLayout : ViewGroup {
                     rectMainClose.bottom
             )
 
-            rightView.layout(
-                    rectRightClose.left,
-                    rectRightClose.top,
-                    rectRightClose.right,
-                    rectRightClose.bottom
-            )
+            if ((dragEdge and DRAG_EDGE_RIGHT) != 0) {
+                rightView.layout(
+                        rectRightClose.left,
+                        rectRightClose.top,
+                        rectRightClose.right,
+                        rectRightClose.bottom
+                )
+            }
 
-            leftView.layout(
-                    rectLeftClose.left,
-                    rectLeftClose.top,
-                    rectLeftClose.right,
-                    rectLeftClose.bottom
-            )
+            if (dragEdge == DRAG_EDGE_LEFT and DRAG_EDGE_RIGHT) {
+                leftView.layout(
+                        rectLeftClose.left,
+                        rectLeftClose.top,
+                        rectLeftClose.right,
+                        rectLeftClose.bottom
+                )
+            }
         }
 
         ViewCompat.postInvalidateOnAnimation(this)
@@ -719,22 +736,6 @@ class SwipeRevealLayout : ViewGroup {
                 mainView.bottom
         )
 
-        // close position of right view
-        rectRightClose.set(
-                rightView.left,
-                rightView.top,
-                rightView.right,
-                rightView.bottom
-        )
-
-        // close position of left view
-        rectLeftClose.set(
-                leftView.left,
-                leftView.top,
-                leftView.right,
-                leftView.bottom
-        )
-
         // open position of the main view
         rectMainOpen.set(
                 mainOpenLeft,
@@ -743,21 +744,41 @@ class SwipeRevealLayout : ViewGroup {
                 mainOpenTop + mainView.height
         )
 
-        // open position of the right view
-        rectRightOpen.set(
-                rightOpenLeft,
-                secOpenTop,
-                rightOpenLeft + rightView.width,
-                secOpenTop + rightView.height
-        )
+        if ((dragEdge and DRAG_EDGE_RIGHT) != 0) {
+            // close position of right view
+            rectRightClose.set(
+                    rightView.left,
+                    rightView.top,
+                    rightView.right,
+                    rightView.bottom
+            )
 
-        // open position of the left view
-        rectLeftOpen.set(
-                leftOpenRight,
-                secOpenTop,
-                leftOpenRight + leftView.width,
-                secOpenTop + leftView.height
-        )
+            // open position of the right view
+            rectRightOpen.set(
+                    rightOpenLeft,
+                    secOpenTop,
+                    rightOpenLeft + rightView.width,
+                    secOpenTop + rightView.height
+            )
+        }
+
+        if (dragEdge == DRAG_EDGE_LEFT and DRAG_EDGE_RIGHT) {
+            // close position of left view
+            rectLeftClose.set(
+                    leftView.left,
+                    leftView.top,
+                    leftView.right,
+                    leftView.bottom
+            )
+
+            // open position of the left view
+            rectLeftOpen.set(
+                    leftOpenRight,
+                    secOpenTop,
+                    leftOpenRight + leftView.width,
+                    secOpenTop + leftView.height
+            )
+        }
     }
 
     private fun couldBecomeClick(ev: MotionEvent): Boolean {
