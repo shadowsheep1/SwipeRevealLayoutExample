@@ -19,10 +19,6 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
-/**
- * Converted and Maintain by shadowsheep on October 2019.
- */
-
 class SwipeRevealLayout : ViewGroup {
 
     /**
@@ -242,12 +238,14 @@ class SwipeRevealLayout : ViewGroup {
             }
         }
 
-    private fun halfwayPivotHorizontalForRightEdge() = rectMainClose.right - rightView.width / 2
-    private fun halfwayPivotHorizontalForLeftEdge(leftWidth: Int) = rectMainClose.right + leftWidth / 2
+    // TODO - How may we have to swipe to start open animation
+    //  this should be parametrized.
+    private fun halfwayPivotHorizontalForRightEdge() = rectMainClose.right - rightView.width / 4
+
+    private fun halfwayPivotHorizontalForLeftEdge(leftWidth: Int) = rectMainClose.right + leftWidth / 4
     //endregion
 
     //region reset layout
-    @Suppress("unused")
     fun resetLayout() {
         if (isOpen) {
             close(false)
@@ -257,6 +255,34 @@ class SwipeRevealLayout : ViewGroup {
 
     //region Drag Helper
     private val dragHelperCallback = object : ViewDragHelper.Callback() {
+        override fun onViewDragStateChanged(state: Int) {
+            super.onViewDragStateChanged(state)
+
+            Timber.i("onViewDragStateChanged state: $state, isOpen $isOpen")
+
+            if (state == ViewDragHelper.STATE_IDLE) {
+                if (!isOpen) {
+                    if (dragEdge == DRAG_EDGE_LEFT or DRAG_EDGE_RIGHT) {
+                        //Log.i("DragHelper", "onViewDragStateChanged -> all VISIBLE isOpen $isOpen")
+                        leftView.visibility = View.VISIBLE
+                        rightView.visibility = View.VISIBLE
+                    }
+                } else {
+                    if (dragEdge == DRAG_EDGE_LEFT or DRAG_EDGE_RIGHT) {
+                        if (draggingFromRightToLeft()) {
+                            leftView.visibility = View.GONE
+                            rightView.visibility = View.VISIBLE
+                            //Log.i("DragHelper", "onViewDragStateChanged -> left GONE, right: VISIBLE, isOpen $isOpen")
+                        } else {
+                            rightView.visibility = View.GONE
+                            leftView.visibility = View.VISIBLE
+                            //Log.i("DragHelper", "onViewDragStateChanged -> right GONE, left: VISIBLE, isOpen $isOpen")
+                        }
+                    }
+                }
+            }
+        }
+
         override fun tryCaptureView(child: View, pointerId: Int): Boolean {
 
             if (isDragLocked)
@@ -447,6 +473,7 @@ class SwipeRevealLayout : ViewGroup {
         prevX = ev.x
 
         // return true => intercept, cannot trigger onClick event
+        Timber.i("Could become click: ${!couldBecomeClick && (settling || idleAfterScrolled)}")
         return !couldBecomeClick && (settling || idleAfterScrolled)
     }
 
@@ -649,6 +676,22 @@ class SwipeRevealLayout : ViewGroup {
      */
     private fun open(animation: Boolean) {
         // OKAY - here we open the menu
+        if (dragEdge == DRAG_EDGE_LEFT or DRAG_EDGE_RIGHT && !isOpen) {
+            if (draggingFromRightToLeft()) {
+                leftView.visibility = View.INVISIBLE
+                if (rightView.visibility != View.VISIBLE) {
+                    rightView.visibility = View.VISIBLE
+                }
+                //Log.i("DragHelper", "open -> left INVISIBLE, isOpen: $isOpen")
+            } else {
+                rightView.visibility = View.INVISIBLE
+                if (leftView.visibility != View.VISIBLE) {
+                    leftView.visibility = View.VISIBLE
+                }
+                //Log.i("DragHelper", "open -> right INVISIBLE isOpen: $isOpen")
+            }
+        }
+
         isOpen = true
 
         if (animation) {
@@ -663,7 +706,7 @@ class SwipeRevealLayout : ViewGroup {
                     rectMainOpen.bottom
             )
 
-            if ((dragEdge and DRAG_EDGE_RIGHT) != 0) {
+            if (dragEdge == DRAG_EDGE_RIGHT || dragEdge == DRAG_EDGE_LEFT) {
                 rightView.layout(
                         rectRightOpen.left,
                         rectRightOpen.top,
@@ -672,7 +715,7 @@ class SwipeRevealLayout : ViewGroup {
                 )
             }
 
-            if (dragEdge == DRAG_EDGE_LEFT and DRAG_EDGE_RIGHT) {
+            if (dragEdge == DRAG_EDGE_LEFT or DRAG_EDGE_RIGHT) {
                 leftView.layout(
                         rectLeftOpen.left,
                         rectLeftOpen.top,
@@ -705,7 +748,7 @@ class SwipeRevealLayout : ViewGroup {
                     rectMainClose.bottom
             )
 
-            if ((dragEdge and DRAG_EDGE_RIGHT) != 0) {
+            if (dragEdge == DRAG_EDGE_RIGHT || dragEdge == DRAG_EDGE_LEFT) {
                 rightView.layout(
                         rectRightClose.left,
                         rectRightClose.top,
@@ -714,13 +757,19 @@ class SwipeRevealLayout : ViewGroup {
                 )
             }
 
-            if (dragEdge == DRAG_EDGE_LEFT and DRAG_EDGE_RIGHT) {
+            if (dragEdge == DRAG_EDGE_LEFT or DRAG_EDGE_RIGHT) {
                 leftView.layout(
                         rectLeftClose.left,
                         rectLeftClose.top,
                         rectLeftClose.right,
                         rectLeftClose.bottom
                 )
+            }
+
+            if (dragEdge == DRAG_EDGE_LEFT or DRAG_EDGE_RIGHT) {
+                //Log.i("DragHelper", "close -> all VISIBLE")
+                leftView.visibility = View.VISIBLE
+                rightView.visibility = View.VISIBLE
             }
         }
 
@@ -745,7 +794,7 @@ class SwipeRevealLayout : ViewGroup {
                 mainOpenTop + mainView.height
         )
 
-        if ((dragEdge and DRAG_EDGE_RIGHT) != 0) {
+        if (dragEdge == DRAG_EDGE_RIGHT || dragEdge == DRAG_EDGE_LEFT) {
             // close position of right view
             rectRightClose.set(
                     rightView.left,
@@ -763,7 +812,7 @@ class SwipeRevealLayout : ViewGroup {
             )
         }
 
-        if (dragEdge == DRAG_EDGE_LEFT and DRAG_EDGE_RIGHT) {
+        if (dragEdge == DRAG_EDGE_LEFT or DRAG_EDGE_RIGHT) {
             // close position of left view
             rectLeftClose.set(
                     leftView.left,
@@ -810,8 +859,8 @@ class SwipeRevealLayout : ViewGroup {
 
         val signedDraggedDistance = ev.x - prevX
         dragDist += signedDraggedDistance
-        Timber.i("Drag distance %s", signedDraggedDistance)
-        Timber.i("Total drag distance %s", dragDist)
+        Timber.i("Drag distance $signedDraggedDistance")
+        Timber.i("Total drag distance $dragDist")
     }
 
     private fun draggingFromRightToLeft(): Boolean {
